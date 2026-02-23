@@ -59,20 +59,23 @@ The detailed reasoning is the most important part — describe every discrepancy
 
 If the command exits non-zero, inspect the output for the error type and fallback accordingly:
 
+**Retry first (all non-fatal errors):**
+Before switching models or giving up, retry the same command up to **5 times** with the same model. Wait 3 seconds between retries. Only proceed to the steps below if all 5 retries fail.
+
 **Quota / rate limit errors** (output contains `quota`, `429`, `rate limit`, or `resource exhausted`):
-Try the next model in this fallback chain, in order:
+After 5 retries fail, try the next model in this fallback chain, in order:
 1. `gemini-3-flash-preview` (primary)
 2. `gemini-3-pro-preview`
 3. `gemini-2.5-pro`
 4. `gemini-2.5-flash`
 
-Replace `-m gemini-3-flash-preview` with the next model and retry the exact same command. Stop at the first model that succeeds.
+For each fallback model, also retry up to 5 times before moving to the next. Replace `-m gemini-3-flash-preview` with the next model and retry the exact same command. Stop at the first model that succeeds.
 
 **Other errors:**
 - Video file not found → check path exists before retrying
 - Gemini CLI not installed → `npm install -g @google/gemini-cli`
 - Not authenticated → run `gemini` interactively to authenticate
-- Any other error → report to user with full error output, do not retry
+- Any other persistent error after 5 retries → report to user with full error output
 
 ### Step 4: Interpret the result
 
