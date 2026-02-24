@@ -36,7 +36,10 @@ Use the `@` file attachment syntax to pass the video. Run via Bash:
 ```bash
 echo "You are a QA engineer reviewing a screen recording from an automated UI test.
 
-Describe EXACTLY what you observe in this video @VIDEO_PATH step by step in chronological order.
+Please read the video file @VIDEO_PATH (especially read this video file directly — it is a screen recording at that exact path).
+
+
+Describe EXACTLY what you observe in this video step by step in chronological order.
 
 Then compare against this EXPECTED BEHAVIOR:
 EXPECTATION_DESCRIPTION
@@ -50,10 +53,13 @@ If FAIL, explain exhaustively:
 - Any visual anomalies, timing issues, missing elements, or incorrect states you noticed
 - Possible root causes based on what you observed
 
-The detailed reasoning is the most important part — describe every discrepancy, no matter how small." | gemini -m gemini-3-flash-preview -y -e ""
+The detailed reasoning is the most important part — describe every discrepancy, no matter how small.
+
+DO nothing after you finish video analysis.
+" | gemini -m gemini-3-pro-preview -y -e ""
 ```
 
-**Critical:** Use `@/absolute/path` (with `@` prefix). Do NOT use `-p` flag — it fails with video files.
+**Critical:** Do NOT use `-p` flag — it fails with video files.
 
 ### Step 3: Handle errors and quota fallback
 
@@ -64,9 +70,9 @@ Before switching models or giving up, retry the same command up to **5 times** w
 
 **Quota / rate limit errors** (output contains `quota`, `429`, `rate limit`, or `resource exhausted`):
 After 5 retries fail, try the next model in this fallback chain, in order:
-1. `gemini-3-flash-preview` (primary)
-2. `gemini-3-pro-preview`
+2. `gemini-3-pro-preview` (primary)
 3. `gemini-2.5-pro`
+1. `gemini-3-flash-preview`
 4. `gemini-2.5-flash`
 
 For each fallback model, also retry up to 5 times before moving to the next. Replace `-m gemini-3-flash-preview` with the next model and retry the exact same command. Stop at the first model that succeeds.
@@ -88,10 +94,14 @@ For each fallback model, also retry up to 5 times before moving to the next. Rep
 ```bash
 echo "You are a QA engineer reviewing a screen recording from an automated UI test.
 
-Describe EXACTLY what you observe in this video @/home/user/test-results/login-test/video.webm step by step in chronological order.
+Please read the video file @VIDEO_PATH (especially read this video file directly — it is a screen recording at that exact path).
+
+DO NOT read any code, do not modify any code or implement anything.
+
+Describe EXACTLY what you observe in this video step by step in chronological order.
 
 Then compare against this EXPECTED BEHAVIOR:
-User types email and password, clicks Login, and is redirected to the dashboard. The dashboard shows a welcome message with the user's name.
+EXPECTATION_DESCRIPTION
 
 Give a verdict: PASS or FAIL.
 
